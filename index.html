@@ -4,57 +4,204 @@ Filename: index.html
 License: MIT Open Source License
 -->
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <!-- import d3.js version 7 -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <!-- import tailwind and other stylesheets -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="./css/index.css" rel="stylesheet" type="text/css" />
-  <!-- import font awesome-->
-  <script src="https://kit.fontawesome.com/339b6d0017.js" crossorigin="anonymous"></script>
-</head>
+  <head>
+    <!-- import d3.js version 7 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- import tailwind and other stylesheets -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="./css/index.css" rel="stylesheet" type="text/css" />
+    <!-- import font awesome-->
+    <script
+      src="https://kit.fontawesome.com/339b6d0017.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
 
-<!-- document Body -->
+  <!-- document Body -->
 
-<body>
-  <div class="wrapper">
-
-    <!-- navbar-->
-    <nav class="bg-gray-800">
-      <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div class="relative flex items-center justify-between h-20">
-          <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
-            <div class="flex-shrink-0 flex items-center">
-              <img class="block h-20 w-auto"
-                src="./assets/logo.PNG" alt="Taylor Analytics">
+  <body>
+    <div class="wrapper h-screen bg-gray-900">
+      <!-- navbar-->
+      <nav class="bg-gray-800">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div class="relative flex items-center justify-between h-20">
+            <div
+              class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start"
+            >
+              <div class="flex-shrink-0 flex items-center">
+                <img
+                  class="block h-20 w-auto"
+                  src="./assets/logo.PNG"
+                  alt="Taylor Analytics"
+                />
+              </div>
             </div>
-          </div>
-          <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            <!-- navbar links -->
-            <div class="ml-3 relative">
-              <div class="hidden sm:block sm:ml-6">
-                <div class="flex space-x-4">
-                  <a href="#" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
-                    aria-current="page">Dashboard</a>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0"
+            >
+              <!-- navbar links -->
+              <div class="ml-3 relative">
+                <div class="hidden sm:block sm:ml-6">
+                  <div class="flex space-x-4">
+                    <a
+                      href="#"
+                      class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+                      aria-current="page"
+                      >Dashboard</a
+                    >
 
-                  <a href="#"
-                    class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Github</a>
+                    <a
+                      href="#"
+                      class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                      >Github</a
+                    >
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </nav>
+      <div class="content p-5 pt-8 max-w-4xl">
+        <div class="case-death-linechart bg-gray-800">
+          <h2 class="text-white font-bold p-3">Cases and Deaths by Country</h2>
+        </div>
       </div>
-    </nav>
-  </div>
-</body>
+    </div>
+  </body>
 
-<!-- internal JS code -->
-<script></script>
+  <!-- internal JS code -->
+  <script>
+    var cases = [];
 
+    // read covid data as csv file
+    const csv = d3.csv(
+      "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/owid-covid-data.csv"
+    );
+
+    // declare constant values
+    const WIDTH = 800;
+    const HEIGHT = 400;
+    const MARGIN = { top: 20, right: 30, bottom: 30, left: 40 };
+    const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
+    const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
+
+    // set the ranges
+    var x = d3.scaleTime().range([0, WIDTH]);
+    var y = d3.scaleLinear().range([HEIGHT, 0]);
+
+    // define the cases line
+    var caseLine = d3
+      .line()
+      .x(function (d) {
+        return x(d.date);
+      })
+      .y(function (d) {
+        return y(d.new_cases);
+      });
+
+    // define the deaths line
+    var deathLine = d3
+      .line()
+      .x(function (d) {
+        return x(d.date);
+      })
+      .y(function (d) {
+        return y(d.total_deaths);
+      });
+
+    // append the svg obgect to the body of the page
+    // appends a 'group' element to 'svg'
+    // moves the 'group' element to the top left margin
+    var svg = d3
+      .select(".case-death-linechart")
+      .append("svg")
+      .attr("width", WIDTH + MARGIN.left + MARGIN.right)
+      .attr("height", HEIGHT + MARGIN.top + MARGIN.bottom)
+      .append("g")
+      .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
+
+    csv.then((value) => {
+      for (var i = 0; i < value.length; i++) {
+        if ((value[i].location === "United Kingdom")) {
+          cases.push(value[i]);
+        }
+      }
+      // format the data
+      cases.forEach(function (d) {
+        d.date = new Date(d.date);
+        d.new_cases = +d.new_cases;
+        console.log(d);
+      });
+
+      cases.sort(function (a, b) {
+        // Turn your strings into dates, and then subtract them
+        // to get a value that is either negative, positive, or zero.
+        return new Date(b.date) - new Date(a.date);
+      });
+
+      // Scale the range of the data
+      x.domain(
+        d3.extent(cases, function (d) {
+          return d.date;
+        })
+      ).range([0, WIDTH]);
+      y.domain([
+        0,
+        d3.max(cases, function (d) {
+          return d.new_cases;
+        }),
+      ]).range([HEIGHT - MARGIN.bottom, MARGIN.top]);
+
+      // add the case line path.
+      svg
+        .append("path")
+        .data([cases])
+        .attr("class", "line")
+        .attr("d", caseLine)
+        .attr("class", "lineBlue");
+
+      /*
+      // add the death line path.
+      svg
+        .append("path")
+        .data([cases])
+        .attr("class", "line")
+        .attr("d", deathLine)
+        .attr("class", "linePink");*/
+
+      // add the x axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${HEIGHT - MARGIN.bottom})`)
+        .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%d %b %y")).ticks(12))
+        .attr("id", "xAxis")
+        .attr("class", "axisWhite")
+        .call((g) => g.selectAll(".tick text").attr("dy", 15));
+
+      // add the y axis
+      svg
+        .append("g")
+        .call(d3.axisRight(y).tickSize(WIDTH))
+        .call((g) => g.select(".domain").remove())
+        .call((g) =>
+          g
+            .selectAll(".tick:not(:first-of-type) line")
+            .attr("stroke-opacity", 0.5)
+            .attr("stroke-dasharray", "2,2")
+        )
+        .call((g) =>
+          g
+            .selectAll(".tick text")
+            .attr("x", 4)
+            .attr("dy", -4)
+            .attr("color", "white")
+        );
+    });
+  </script>
 </html>

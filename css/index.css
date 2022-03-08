@@ -3,3 +3,31 @@ Author: Callum Taylor
 Filename: index.css
 License: MIT Open Source License
 */
+
+axisWhite line {
+    stroke-opacity: 0.5;
+}
+
+.axisWhite path {
+    stroke-opacity: 0.5;
+}
+
+.axisWhite text {
+    fill: white;
+}
+
+.lineBlue {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+}
+
+.linePink {
+    fill: none;
+    stroke: magenta;
+    stroke-width: 2px;
+}
+
+#xAxis .tick line{
+    visibility:hidden;
+  }
