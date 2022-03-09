@@ -105,16 +105,6 @@ License: MIT Open Source License
         return y(d.new_cases);
       });
 
-    // define the deaths line
-    var deathLine = d3
-      .line()
-      .x(function (d) {
-        return x(d.date);
-      })
-      .y(function (d) {
-        return y(d.total_deaths);
-      });
-
     // append the svg obgect to the body of the page
     // appends a 'group' element to 'svg'
     // moves the 'group' element to the top left margin
@@ -127,8 +117,9 @@ License: MIT Open Source License
       .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
 
     csv.then((value) => {
+      // load csv values into a preprocessing array
       for (var i = 0; i < value.length; i++) {
-        if ((value[i].location === "United Kingdom")) {
+        if (value[i].location === "Afghanistan") {
           cases.push(value[i]);
         }
       }
@@ -136,16 +127,14 @@ License: MIT Open Source License
       cases.forEach(function (d) {
         d.date = new Date(d.date);
         d.new_cases = +d.new_cases;
-        console.log(d);
       });
 
       cases.sort(function (a, b) {
-        // Turn your strings into dates, and then subtract them
-        // to get a value that is either negative, positive, or zero.
+        // turn strings into dates
         return new Date(b.date) - new Date(a.date);
       });
 
-      // Scale the range of the data
+      // cale the range of the data
       x.domain(
         d3.extent(cases, function (d) {
           return d.date;
@@ -165,16 +154,6 @@ License: MIT Open Source License
         .attr("class", "line")
         .attr("d", caseLine)
         .attr("class", "lineBlue");
-
-      /*
-      // add the death line path.
-      svg
-        .append("path")
-        .data([cases])
-        .attr("class", "line")
-        .attr("d", deathLine)
-        .attr("class", "linePink");*/
-
       // add the x axis
       svg
         .append("g")
@@ -188,6 +167,7 @@ License: MIT Open Source License
       svg
         .append("g")
         .call(d3.axisRight(y).tickSize(WIDTH))
+        .attr("id", "yAxis")
         .call((g) => g.select(".domain").remove())
         .call((g) =>
           g
@@ -202,6 +182,125 @@ License: MIT Open Source License
             .attr("dy", -4)
             .attr("color", "white")
         );
+    });
+
+    // A function that update the chart
+    function update(selectedGroup) {
+      csv.then((value) => {
+        cases = [];
+
+        for (var i = 0; i < value.length; i++) {
+          if (value[i].location === selectedGroup) {
+            cases.push(value[i]);
+          }
+        }
+
+        // TODO: Refactor
+        // format the data
+        cases.forEach(function (d) {
+          d.date = new Date(d.date);
+          d.new_cases = +d.new_cases;
+        });
+
+        cases.sort(function (a, b) {
+          // turn strings into dates
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        // calc the range of the data
+        x.domain(
+          d3.extent(cases, function (d) {
+            return d.date;
+          })
+        ).range([0, WIDTH]);
+        y.domain([
+          0,
+          d3.max(cases, function (d) {
+            return d.new_cases;
+          }),
+        ]).range([HEIGHT - MARGIN.bottom, MARGIN.top]);
+
+        svg
+          .selectAll("#xAxis")
+          .transition()
+          .duration(1000)
+          .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%d %b %y")).ticks()).attr("class", "axisWhite")
+          .call((g) => g.selectAll(".tick text").attr("dy", 15));
+  
+
+        svg
+          .selectAll("#yAxis")
+          .transition()
+          .duration(1000)
+          .call(d3.axisRight(y).tickSize(WIDTH)).call((g) => g.select(".domain").remove())
+          .call((g) =>
+            g
+              .selectAll(".tick:not(:first-of-type) line")
+              .attr("stroke-opacity", 0.5)
+              .attr("stroke-dasharray", "2,2")
+          )
+          .call((g) =>
+            g
+              .selectAll(".tick text")
+              .attr("x", 4)
+              .attr("dy", -4)
+              .attr("color", "white")
+          );
+
+                  // Give these new data to update line
+        svg
+        .select("path")
+        .data([cases])
+        .transition()
+        .duration(1000)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x(function (d) {
+              return x(d.date);
+            })
+            .y(function (d) {
+              return y(d.new_cases);
+            })
+        )
+        .attr("stroke", "blue");
+          
+      });
+    }
+
+    var dropdownChange = function () {
+      var country = d3.select(this).property("value");
+      update(country);
+    };
+
+    csv.then((value) => {
+      var temp = [];
+      // load csv values into a preprocessing array
+      for (var i = 0; i < value.length; i++) {
+        temp.indexOf(value[i].location) === -1
+          ? temp.push(value[i].location)
+          : [];
+      }
+
+      var dropDown = d3
+        .select(".case-death-linechart")
+        .append("select")
+        .attr("class", "selection")
+        .attr("name", "country-list")
+        .on("change", dropdownChange);
+      var options = dropDown
+        .selectAll("option")
+        .data(temp)
+        .enter()
+        .append("option");
+      options
+        .text(function (d) {
+          return d;
+        })
+        .attr("value", function (d) {
+          return d;
+        });
     });
   </script>
 </html>
