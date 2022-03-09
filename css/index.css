@@ -4,6 +4,12 @@ Filename: index.css
 License: MIT Open Source License
 */
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+* {
+    font-family: "Poppins", sans-serif;
+}
+
 axisWhite line {
     stroke-opacity: 0.5;
 }
