@@ -299,7 +299,10 @@ License: MIT Open Source License
       var country = d3.select(this).property("value");
       updateLC(country, cases, svg, "cases");
       d3.selectAll(`path`).classed("selected", false);
-      d3.select(`[name=${country.replace(/\s/g, '')}]`).classed("selected", true);
+      d3.select(`[name=${country.replace(/\s/g, "")}]`).classed(
+        "selected",
+        true
+      );
     }
 
     // create the interactivity drop down
@@ -348,48 +351,53 @@ License: MIT Open Source License
   /////////////////////////
   */
 
+    // callback function when selecting country
     function selectCountry() {
       d3.select(".selected").classed("selected", false);
       d3.select(this).classed("selected", true);
-      console.log(this)
-      var country = d3.select(this).attr("class").replace(" selected", '');
+      console.log(this);
+      var country = d3.select(this).attr("class").replace(" selected", "");
       updateLC(country, cases, svg, "cases");
-      d3.select('select').property('value', country);
+      d3.select("select").property("value", country);
     }
 
+    // declare map constants
+    const mapWidth = 800;
+    const mapHeight = 498;
+
+    const map = d3
+      .select(".content")
+      .append("svg")
+      .attr("class", "bg-gray-800")
+      .attr("width", mapWidth)
+      .attr("height", mapHeight) //track where user clicked down
+
+    const projection = d3
+      .geoMercator()
+      .scale(100)
+      .translate([mapWidth / 2, mapHeight / 1.4]);
+    const path = d3.geoPath(projection);
+
+    const mapG = map.append("g");
+
     function createMap() {
-      const width = 800;
-      const height = 498;
-
-      const svg = d3
-        .select(".content")
-        .append("svg")
-        .attr("class", "bg-gray-800")
-        .attr("width", width)
-        .attr("height", height);
-
-      const projection = d3
-        .geoMercator()
-        .scale(100)
-        .translate([width / 2, height / 1.4]);
-      const path = d3.geoPath(projection);
-
-      const g = svg.append("g");
-
       d3.json(
         "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/countries.json"
       ).then((data) => {
         const countries = topojson.feature(data, data.objects.countries);
-        g.selectAll("path")
+        mapG
+          .selectAll("path")
           .data(countries.features)
           .enter()
           .append("path")
           .attr("class", function (d) {
-          return (d.properties.name == "Afghanistan" ? `selected ${d.properties.name}` : d.properties.name)
+            return d.properties.name == "Afghanistan"
+              ? `selected ${d.properties.name}`
+              : d.properties.name;
           })
           .on("click", selectCountry)
           .attr("name", function (d) {
-            return d.properties.name.replace(/\s/g, '');
+            return d.properties.name.replace(/\s/g, "");
           })
           .attr("id", function (d) {
             return "country" + d.id;
@@ -398,9 +406,22 @@ License: MIT Open Source License
             return d3
               .schemeBlues[6][Math.floor(Math.random() * (5 - 1 + 1) + 1)];
           })
+          .style("stroke", "black")
+          .style("stroke-width", "0.1")
           .attr("d", path);
       });
     }
+
+    // handle zoom and panning
+    var zoom = d3
+      .zoom()
+      .scaleExtent([1, 10])
+      .on("zoom", function (event) {
+        mapG.selectAll("path").attr("transform", event.transform);
+      });
+
+    map.call(zoom);
+
     createMap();
   </script>
 </html>
