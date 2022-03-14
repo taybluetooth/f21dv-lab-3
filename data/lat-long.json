@@ -250,14 +250,6 @@
       "longitude" : -72
     },
 {
-      "country" : "Comoros",
-      "alpha2" : "KM",
-      "alpha3" : "COM",
-      "numeric" : 174,
-      "latitude" : -12.1667,
-      "longitude" : 44.25
-    },
-{
       "country" : "Congo",
       "alpha2" : "CG",
       "alpha3" : "COG",
@@ -488,14 +480,6 @@
       "numeric" : 304,
       "latitude" : 72,
       "longitude" : -40
-    },
-{
-      "country" : "Guadeloupe",
-      "alpha2" : "GP",
-      "alpha3" : "GLP",
-      "numeric" : 312,
-      "latitude" : 16.25,
-      "longitude" : -61.5833
     },
 {
       "country" : "Guatemala",
@@ -1264,14 +1248,6 @@
       "numeric" : 795,
       "latitude" : 40,
       "longitude" : 60
-    },
-{
-      "country" : "Tuvalu",
-      "alpha2" : "TV",
-      "alpha3" : "TUV",
-      "numeric" : 798,
-      "latitude" : -8,
-      "longitude" : 178
     },
 {
       "country" : "Uganda",
