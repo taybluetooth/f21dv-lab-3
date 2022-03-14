@@ -41,14 +41,6 @@
       "longitude" : 45
     },
 {
-      "country" : "Aruba",
-      "alpha2" : "AW",
-      "alpha3" : "ABW",
-      "numeric" : 533,
-      "latitude" : 12.5,
-      "longitude" : -69.9667
-    },
-{
       "country" : "Australia",
       "alpha2" : "AU",
       "alpha3" : "AUS",
@@ -79,14 +71,6 @@
       "numeric" : 44,
       "latitude" : 24.25,
       "longitude" : -76
-    },
-{
-      "country" : "Bahrain",
-      "alpha2" : "BH",
-      "alpha3" : "BHR",
-      "numeric" : 48,
-      "latitude" : 26,
-      "longitude" : 50.55
     },
 {
       "country" : "Bangladesh",
@@ -239,22 +223,6 @@
       "numeric" : 124,
       "latitude" : 60,
       "longitude" : -95
-    },
-{
-      "country" : "Cape Verde",
-      "alpha2" : "CV",
-      "alpha3" : "CPV",
-      "numeric" : 132,
-      "latitude" : 16,
-      "longitude" : -24
-    },
-{
-      "country" : "Cayman Islands",
-      "alpha2" : "KY",
-      "alpha3" : "CYM",
-      "numeric" : 136,
-      "latitude" : 19.5,
-      "longitude" : -80.5
     },
 {
       "country" : "Central African Republic",
@@ -545,28 +513,12 @@
       "longitude" : -40
     },
 {
-      "country" : "Grenada",
-      "alpha2" : "GD",
-      "alpha3" : "GRD",
-      "numeric" : 308,
-      "latitude" : 12.1167,
-      "longitude" : -61.6667
-    },
-{
       "country" : "Guadeloupe",
       "alpha2" : "GP",
       "alpha3" : "GLP",
       "numeric" : 312,
       "latitude" : 16.25,
       "longitude" : -61.5833
-    },
-{
-      "country" : "Guam",
-      "alpha2" : "GU",
-      "alpha3" : "GUM",
-      "numeric" : 316,
-      "latitude" : 13.4667,
-      "longitude" : 144.7833
     },
 {
       "country" : "Guatemala",
@@ -993,14 +945,6 @@
       "longitude" : 17
     },
 {
-      "country" : "Nauru",
-      "alpha2" : "NR",
-      "alpha3" : "NRU",
-      "numeric" : 520,
-      "latitude" : -0.5333,
-      "longitude" : 166.9167
-    },
-{
       "country" : "Nepal",
       "alpha2" : "NP",
       "alpha3" : "NPL",
@@ -1185,14 +1129,6 @@
       "longitude" : 30
     },
 {
-      "country" : "Samoa",
-      "alpha2" : "WS",
-      "alpha3" : "WSM",
-      "numeric" : 882,
-      "latitude" : -13.5833,
-      "longitude" : -172.3333
-    },
-{
       "country" : "Saudi Arabia",
       "alpha2" : "SA",
       "alpha3" : "SAU",
@@ -1215,14 +1151,6 @@
       "numeric" : 688,
       "latitude" : 44,
       "longitude" : 21
-    },
-{
-      "country" : "Seychelles",
-      "alpha2" : "SC",
-      "alpha3" : "SYC",
-      "numeric" : 690,
-      "latitude" : -4.5833,
-      "longitude" : 55.6667
     },
 {
       "country" : "Sierra Leone",
@@ -1255,14 +1183,6 @@
       "numeric" : 705,
       "latitude" : 46,
       "longitude" : 15
-    },
-{
-      "country" : "Solomon Islands",
-      "alpha2" : "SB",
-      "alpha3" : "SLB",
-      "numeric" : 90,
-      "latitude" : -8,
-      "longitude" : 159
     },
 {
       "country" : "Somalia",
@@ -1385,14 +1305,6 @@
       "longitude" : 1.1667
     },
 {
-      "country" : "Tokelau",
-      "alpha2" : "TK",
-      "alpha3" : "TKL",
-      "numeric" : 772,
-      "latitude" : -9,
-      "longitude" : -172
-    },
-{
       "country" : "Tonga",
       "alpha2" : "TO",
       "alpha3" : "TON",
@@ -1431,14 +1343,6 @@
       "numeric" : 795,
       "latitude" : 40,
       "longitude" : 60
-    },
-{
-      "country" : "Turks and Caicos Islands",
-      "alpha2" : "TC",
-      "alpha3" : "TCA",
-      "numeric" : 796,
-      "latitude" : 21.75,
-      "longitude" : -71.5833
     },
 {
       "country" : "Tuvalu",

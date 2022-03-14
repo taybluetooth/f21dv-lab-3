@@ -423,11 +423,22 @@ License: MIT Open Source License
         .attr("cy", function (d) {
           return projection([d.longitude, d.latitude])[1];
         })
-        .attr("r", 2)
+        .attr("r", 1)
+        .on('mouseover', function(d, i) {
+          d3.select(this)
+            .transition()
+            .attr('r', 2)
+        .attr('fill', '#ff0000');
+        })
+        .on('mouseout', function(d, i) {
+          d3.select(this)
+            .transition()
+            .duration(100)
+            .attr('r', 1)
+            .attr('fill', '#000000');
+        })
         .style("fill", "69b3a2")
-        .attr("stroke", "#69b3a2")
-        .attr("stroke-width", 0.1)
-        .attr("fill-opacity", 0.4);
+        .attr("z-index", "9999 !important");
       })
     }
 
