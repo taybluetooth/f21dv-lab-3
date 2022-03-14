@@ -130,7 +130,7 @@
           "type": "Polygon",
           "arcs": [[-8, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111]],
           "id": "180",
-          "properties": { "name": "Dem. Rep. Congo" }
+          "properties": { "name": "Democratic Republic of Congo" }
         },
         {
           "type": "Polygon",
@@ -166,7 +166,7 @@
           "type": "Polygon",
           "arcs": [[-133, 134]],
           "id": "214",
-          "properties": { "name": "Dominican Rep." }
+          "properties": { "name": "Dominican Republic" }
         },
         {
           "type": "MultiPolygon",
@@ -476,7 +476,7 @@
           "type": "Polygon",
           "arcs": [[-108, 308, -286, -129, -121, 309]],
           "id": "140",
-          "properties": { "name": "Central African Rep." }
+          "properties": { "name": "Central African Republic" }
         },
         {
           "type": "Polygon",
@@ -494,7 +494,7 @@
           "type": "Polygon",
           "arcs": [[-289, -315, 315]],
           "id": "226",
-          "properties": { "name": "Eq. Guinea" }
+          "properties": { "name": "Equatorial Guinea" }
         },
         {
           "type": "Polygon",
@@ -890,7 +890,7 @@
           "type": "MultiPolygon",
           "arcs": [[[511]], [[512]], [[513]], [[514]], [[515]]],
           "id": "090",
-          "properties": { "name": "Solomon Is." }
+          "properties": { "name": "Solomon Islands" }
         },
         {
           "type": "MultiPolygon",
@@ -1123,7 +1123,7 @@
           "type": "Polygon",
           "arcs": [[-496, 586, 587]],
           "id": "070",
-          "properties": { "name": "Bosnia and Herz." }
+          "properties": { "name": "Bosnia and Herzegovina" }
         },
         {
           "type": "Polygon",
@@ -1158,7 +1158,7 @@
           "type": "Polygon",
           "arcs": [[-109, -310, -128, -579, -118, -586]],
           "id": "728",
-          "properties": { "name": "S. Sudan" }
+          "properties": { "name": "South Sudan" }
         }
       ]
     },
