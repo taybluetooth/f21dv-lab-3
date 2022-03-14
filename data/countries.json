@@ -20,7 +20,7 @@
           "type": "Polygon",
           "arcs": [[11, 12, 13, 14]],
           "id": "732",
-          "properties": { "name": "W. Sahara" }
+          "properties": { "name": "Western Sahara" }
         },
         {
           "type": "MultiPolygon",
@@ -1064,7 +1064,7 @@
         {
           "type": "Polygon",
           "arcs": [[570, 571]],
-          "properties": { "name": "N. Cyprus" }
+          "properties": { "name": "Northern Cyprus" }
         },
         {
           "type": "Polygon",
@@ -1129,7 +1129,7 @@
           "type": "Polygon",
           "arcs": [[-481, -487, -494, 588, 589]],
           "id": "807",
-          "properties": { "name": "Macedonia" }
+          "properties": { "name": "North Macedonia" }
         },
         {
           "type": "Polygon",
