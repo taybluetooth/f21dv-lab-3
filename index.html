@@ -207,10 +207,7 @@ License: MIT Open Source License
               .attr("stroke-dasharray", "2,2")
           )
           .call((g) =>
-            g
-              .selectAll(".tick text")
-              .attr("x", 4)
-              .attr("color", "white")
+            g.selectAll(".tick text").attr("x", 4).attr("color", "white")
           );
       });
     }
@@ -273,10 +270,7 @@ License: MIT Open Source License
               .attr("stroke-dasharray", "2,2")
           )
           .call((g) =>
-            g
-              .selectAll(".tick text")
-              .attr("x", 4)
-              .attr("color", "white")
+            g.selectAll(".tick text").attr("x", 4).attr("color", "white")
           );
 
         // Give these new data to update line
@@ -301,9 +295,11 @@ License: MIT Open Source License
     }
 
     // method which updates the countries line chart
-    function casesChange() {
+    function countryChange() {
       var country = d3.select(this).property("value");
       updateLC(country, cases, svg, "cases");
+      d3.selectAll(`path`).classed("selected", false);
+      d3.select(`.${country.replace(/\s/g, '')}`).classed("selected", true);
     }
 
     // create the interactivity drop down
@@ -340,7 +336,7 @@ License: MIT Open Source License
     }
 
     // create dropdown menu
-    createDropdown(".cases-lc-row", casesChange);
+    createDropdown(".cases-lc-row", countryChange);
     // createDropdown(".deaths-lc-row", deathsChange);
     // initialise line chart
     initialiseLC("Afghanistan", cases, svg, "cases");
@@ -351,6 +347,11 @@ License: MIT Open Source License
   END OF LINE CHART
   /////////////////////////
   */
+
+    function selectCountry() {
+      d3.select(".selected").classed("selected", false);
+      d3.select(this).classed("selected", true);
+    }
 
     function createMap() {
       const width = 800;
@@ -379,12 +380,23 @@ License: MIT Open Source License
           .data(countries.features)
           .enter()
           .append("path")
-          .style("fill", "steelblue")
-          .attr("class", "country")
+          .attr("class", function (d) {
+          return (d.properties.name == "Afghanistan" ? `selected ${d.properties.name}` : d.properties.name.replace(/\s/g, ''))
+          })
+          .on("click", selectCountry)
+          .attr("name", function (d) {
+            return d.properties.name.replace(/\s/g, '');
+          })
+          .attr("id", function (d) {
+            return "country" + d.id;
+          })
+          .style("fill", function (d) {
+            return d3
+              .schemeBlues[6][Math.floor(Math.random() * (5 - 1 + 1) + 1)];
+          })
           .attr("d", path);
       });
     }
-
     createMap();
   </script>
 </html>

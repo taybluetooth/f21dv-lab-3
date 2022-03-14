@@ -34,6 +34,10 @@ axisWhite line {
     stroke-width: 2px;
 }
 
-#xAxis .tick line{
-    visibility:hidden;
-  }
+#xAxis .tick line {
+    visibility: hidden;
+}
+
+.selected {
+    fill: red !important;
+}
