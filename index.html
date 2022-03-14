@@ -299,7 +299,7 @@ License: MIT Open Source License
       var country = d3.select(this).property("value");
       updateLC(country, cases, svg, "cases");
       d3.selectAll(`path`).classed("selected", false);
-      d3.select(`.${country.replace(/\s/g, '')}`).classed("selected", true);
+      d3.select(`[name=${country.replace(/\s/g, '')}]`).classed("selected", true);
     }
 
     // create the interactivity drop down
@@ -351,6 +351,9 @@ License: MIT Open Source License
     function selectCountry() {
       d3.select(".selected").classed("selected", false);
       d3.select(this).classed("selected", true);
+      var country = d3.select(this).attr("class").replace(" selected", '');
+      updateLC(country, cases, svg, "cases");
+      d3.select('select').property('value', country);
     }
 
     function createMap() {
@@ -381,7 +384,7 @@ License: MIT Open Source License
           .enter()
           .append("path")
           .attr("class", function (d) {
-          return (d.properties.name == "Afghanistan" ? `selected ${d.properties.name}` : d.properties.name.replace(/\s/g, ''))
+          return (d.properties.name == "Afghanistan" ? `selected ${d.properties.name}` : d.properties.name)
           })
           .on("click", selectCountry)
           .attr("name", function (d) {
