@@ -80,14 +80,7 @@
       "latitude" : 24,
       "longitude" : 90
     },
-{
-      "country" : "Barbados",
-      "alpha2" : "BB",
-      "alpha3" : "BRB",
-      "numeric" : 52,
-      "latitude" : 13.1667,
-      "longitude" : -59.5333
-    },
+
 {
       "country" : "Belarus",
       "alpha2" : "BY",
@@ -119,14 +112,6 @@
       "numeric" : 204,
       "latitude" : 9.5,
       "longitude" : 2.25
-    },
-{
-      "country" : "Bermuda",
-      "alpha2" : "BM",
-      "alpha3" : "BMU",
-      "numeric" : 60,
-      "latitude" : 32.3333,
-      "longitude" : -64.75
     },
 {
       "country" : "Bhutan",
@@ -353,14 +338,6 @@
       "longitude" : 43
     },
 {
-      "country" : "Dominica",
-      "alpha2" : "DM",
-      "alpha3" : "DMA",
-      "numeric" : 212,
-      "latitude" : 15.4167,
-      "longitude" : -61.3333
-    },
-{
       "country" : "Dominican Republic",
       "alpha2" : "DO",
       "alpha3" : "DOM",
@@ -569,14 +546,6 @@
       "longitude" : -86.5
     },
 {
-      "country" : "Hong Kong",
-      "alpha2" : "HK",
-      "alpha3" : "HKG",
-      "numeric" : 344,
-      "latitude" : 22.25,
-      "longitude" : 114.1667
-    },
-{
       "country" : "Hungary",
       "alpha2" : "HU",
       "alpha3" : "HUN",
@@ -769,14 +738,6 @@
       "longitude" : 17
     },
 {
-      "country" : "Liechtenstein",
-      "alpha2" : "LI",
-      "alpha3" : "LIE",
-      "numeric" : 438,
-      "latitude" : 47.1667,
-      "longitude" : 9.5333
-    },
-{
       "country" : "Lithuania",
       "alpha2" : "LT",
       "alpha3" : "LTU",
@@ -791,14 +752,6 @@
       "numeric" : 442,
       "latitude" : 49.75,
       "longitude" : 6.1667
-    },
-{
-      "country" : "Macao",
-      "alpha2" : "MO",
-      "alpha3" : "MAC",
-      "numeric" : 446,
-      "latitude" : 22.1667,
-      "longitude" : 113.55
     },
 {
       "country" : "North Macedonia",
@@ -833,14 +786,6 @@
       "longitude" : 112.5
     },
 {
-      "country" : "Maldives",
-      "alpha2" : "MV",
-      "alpha3" : "MDV",
-      "numeric" : 462,
-      "latitude" : 3.25,
-      "longitude" : 73
-    },
-{
       "country" : "Mali",
       "alpha2" : "ML",
       "alpha3" : "MLI",
@@ -857,28 +802,12 @@
       "longitude" : 14.5833
     },
 {
-      "country" : "Martinique",
-      "alpha2" : "MQ",
-      "alpha3" : "MTQ",
-      "numeric" : 474,
-      "latitude" : 14.6667,
-      "longitude" : -61
-    },
-{
       "country" : "Mauritania",
       "alpha2" : "MR",
       "alpha3" : "MRT",
       "numeric" : 478,
       "latitude" : 20,
       "longitude" : -12
-    },
-{
-      "country" : "Mauritius",
-      "alpha2" : "MU",
-      "alpha3" : "MUS",
-      "numeric" : 480,
-      "latitude" : -20.2833,
-      "longitude" : 57.55
     },
 {
       "country" : "Mexico",
@@ -1303,14 +1232,6 @@
       "numeric" : 768,
       "latitude" : 8,
       "longitude" : 1.1667
-    },
-{
-      "country" : "Tonga",
-      "alpha2" : "TO",
-      "alpha3" : "TON",
-      "numeric" : 776,
-      "latitude" : -20,
-      "longitude" : -175
     },
 {
       "country" : "Trinidad and Tobago",

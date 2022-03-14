@@ -425,6 +425,7 @@ License: MIT Open Source License
         })
         .attr("r", 1)
         .on('mouseover', function(d, i) {
+          console.log(i.country);
           d3.select(this)
             .transition()
             .attr('r', 2)
