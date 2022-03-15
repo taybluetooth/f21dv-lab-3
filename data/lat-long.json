@@ -1124,14 +1124,6 @@
     "cases": "3332200.0"
   },
   {
-    "country": "Puerto Rico",
-    "alpha2": "PR",
-    "alpha3": "PRI",
-    "numeric": 630,
-    "latitude": 18.25,
-    "longitude": -66.5
-  },
-  {
     "country": "Qatar",
     "alpha2": "QA",
     "alpha3": "QAT",
@@ -1285,12 +1277,13 @@
     "cases": "78511.0"
   },
   {
-    "country": "Swaziland",
+    "country": "Eswatini",
     "alpha2": "SZ",
     "alpha3": "SWZ",
     "numeric": 748,
     "latitude": -26.5,
-    "longitude": 31.5
+    "longitude": 31.5,
+    "cases": 69298.0
   },
   {
     "country": "Sweden",
@@ -1437,7 +1430,7 @@
     "cases": "19172095.0"
   },
   {
-    "country": "United States",
+    "country": "United States of America",
     "alpha2": "US",
     "alpha3": "USA",
     "numeric": 840,
