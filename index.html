@@ -73,17 +73,29 @@ License: MIT Open Source License
       <div class="row content p-3 ml-12 w-4xl inline-flex">
         <div class="cases-linechart bg-gray-800 mr-3">
           <row class="cases-lc-row inline-flex">
-            <h2 class="text-white font-bold p-3">Cases by Country</h2>
+            <h2 class="text-white font-bold p-3">New Cases by Country</h2>
           </row>
         </div>
-        <!--
-        <div class="deaths-linechart bg-gray-800 w-1/2">
-          <row class="deaths-lc-row inline-flex">
-            <h2 class="text-white font-bold p-3">Deaths by Country</h2>
+        <div class="world-map bg-gray-800 mr-3">
+          <row class="cases-lc-row inline-flex">
+            <h2 class="text-white font-bold p-3">Global Map of Total Cases</h2>
           </row>
         </div>
-      --></div>
-      <div class="row content2 p-3 w-4xl inline-flex"></div>
+        <div class="income-linechart bg-gray-800 mr-3">
+          <row class="cases-lc-row inline-flex">
+            <h2 class="text-white font-bold p-3">Total Cases by Global Income Brackets</h2>
+          </row>
+        </div>
+      </div>
+      <div class="row content2 ml-12 pl-3 w-4xl inline-flex">
+        <div class="vax-linechart bg-gray-800 mr-3">
+          <row class="cases-lc-row inline-flex">
+            <h2 class="text-white font-bold p-3">
+              Total Vaccinations by Country
+            </h2>
+          </row>
+        </div>
+      </div>
     </div>
   </body>
 
@@ -99,12 +111,16 @@ License: MIT Open Source License
     var cases = [];
     var deaths = [];
     var income = [];
+    var vacs = [];
     var totalCases = [];
     var countries = [];
 
     // read covid data as csv file
     const csv = d3.csv(
       "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/owid-covid-data.csv"
+    );
+    const csv2 = d3.csv(
+      "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/vaccinations.csv"
     );
     const jsonD = d3.json(
       "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/lat-long.json"
@@ -154,7 +170,7 @@ License: MIT Open Source License
         arr.forEach(function (d) {
           d.date = new Date(d.date);
           d.new_cases = +d.new_cases;
-          d.new_deaths = +d.new_deaths;
+          d.people_vaccinated = +d.people_vaccinated;
         });
 
         arr.sort(function (a, b) {
@@ -171,7 +187,7 @@ License: MIT Open Source License
         y.domain([
           0,
           d3.max(arr, function (d) {
-            return data === "cases" ? d.new_cases : d.new_deaths;
+            return data === "cases" ? d.new_cases : d.people_vaccinated;
           }),
         ]).range([HEIGHT - MARGIN.bottom, MARGIN.top]);
 
@@ -182,7 +198,7 @@ License: MIT Open Source License
             return x(d.date);
           })
           .y(function (d) {
-            return y(data === "cases" ? d.new_cases : d.new_deaths);
+            return y(data === "cases" ? d.new_cases : d.people_vaccinated);
           });
 
         // add the case line path.
@@ -309,6 +325,7 @@ License: MIT Open Source License
     function countryChange() {
       var country = d3.select(this).property("value");
       updateLC(country, cases, svg, "cases");
+      updateVac(country, vacs, svg2);
       d3.selectAll(`path`).classed("selected", false);
       d3.select(`[name=${country.replace(/\s/g, "")}]`).classed(
         "selected",
@@ -350,11 +367,10 @@ License: MIT Open Source License
     }
 
     // create dropdown menu
-    createDropdown(".cases-lc-row", countryChange);
+    createDropdown(".cases-lc-row", countryChange, csv);
     // createDropdown(".deaths-lc-row", deathsChange);
     // initialise line chart
     initialiseLC("Afghanistan", cases, svg, "cases");
-    // initialiseLC("Afghanistan", deaths, svg2, "deaths");
 
     /*
   /////////////////////////
@@ -375,7 +391,8 @@ License: MIT Open Source License
         "selected",
         true
       );
-      updateLC(country, cases, svg, "cases");
+      updateLC(country, cases, svg, "cases", csv);
+      updateVac(country, vacs, svg2);
       d3.select("select").property("value", country);
     }
 
@@ -384,7 +401,7 @@ License: MIT Open Source License
     const mapHeight = 498;
 
     const map = d3
-      .select(".content")
+      .select(".world-map")
       .append("svg")
       .attr("class", "bg-gray-800")
       .attr("width", mapWidth)
@@ -452,7 +469,6 @@ License: MIT Open Source License
           .legendColor()
           .scale(scaleColor)
           .labelFormat(d3.format(".0f"))
-          .title("Total Cases");
 
         map.append("g").attr("transform", "translate(10,20)").call(legend);
 
@@ -527,7 +543,7 @@ License: MIT Open Source License
     // appends a 'group' element to 'svg'
     // moves the 'group' element to the top left margin
     var scatter = d3
-      .select(".content")
+      .select(".income-linechart")
       .append("svg")
       .attr("class", "bg-gray-800")
       .classed("ml-3", true)
@@ -564,10 +580,8 @@ License: MIT Open Source License
         });
 
         var scaleColor = d3
-        .scaleOrdinal()
-          .domain([
-            "L Income", "LM Income", "UM Income", "H Income"
-          ])
+          .scaleOrdinal()
+          .domain(["L Income", "LM Income", "UM Income", "H Income"])
           .range(["red", "orange", "yellow", "green"]);
 
         var legend = d3
@@ -576,7 +590,6 @@ License: MIT Open Source License
           .labelFormat(d3.format(".0f"))
           .orient("horizontal")
           .scale(scaleColor)
-          .title("Total Cases");
 
         scatter.append("g").attr("transform", "translate(0, -20)").call(legend);
 
@@ -613,7 +626,7 @@ License: MIT Open Source License
           .data(arr)
           .enter()
           .append("circle")
-          .attr("r", 1)
+          .attr("r", 2)
           .attr("cx", function (d) {
             return scatterX(d.date);
           })
@@ -672,6 +685,249 @@ License: MIT Open Source License
     }
 
     createScatter(income);
-    console.log(income);
+
+    function createIncomePieChart() {
+      var pieData = [2, 4, 8, 10];
+      var pieWidth = 400;
+      var pieHeight = 300;
+
+      var pie = d3
+        .select(".content2")
+        .append("svg")
+        .classed("bg-gray-800", true)
+        .attr("width", pieWidth)
+        .attr("height", pieHeight);
+      (radius = Math.min(pieWidth, pieHeight) / 2),
+        (g = pie
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + pieWidth / 2 + "," + pieHeight / 2 + ")"
+          ));
+
+      var color = d3.scaleOrdinal(["red", "orange", "yellow", "green"]);
+
+      // Generate the pie
+      var pieG = d3.pie();
+
+      // Generate the arcs
+      var arc = d3.arc().innerRadius(40).outerRadius(radius);
+
+      //Generate groups
+      var arcs = g
+        .selectAll("arc")
+        .data(pieG(pieData))
+        .enter()
+        .append("g")
+        .attr("class", "arc");
+
+      //Draw arc paths
+      arcs
+        .append("path")
+        .attr("fill", function (d, i) {
+          return color(i);
+        })
+        .attr("d", arc);
+    }
+
+    /*
+  /////////////////////////
+  VACCINATIONS
+  /////////////////////////
+  */
+
+    // declare constant values
+    const VACWIDTH = 500;
+    const VACHEIGHT = 220;
+    const VACMARGIN = {
+      top: 10,
+      right: 30,
+      bottom: 20,
+      left: 40,
+    };
+
+    var svg2 = d3
+      .select(".vax-linechart")
+      .append("svg")
+      .attr("width", VACWIDTH + VACMARGIN.left + VACMARGIN.right)
+      .attr("height", VACHEIGHT + VACMARGIN.top + VACMARGIN.bottom)
+      .classed("bg-gray-800", true)
+      .append("g")
+      .attr(
+        "transform",
+        "translate(" + VACMARGIN.left + "," + VACMARGIN.top + ")"
+      );
+
+    // set the ranges
+    var x1 = d3.scaleTime().range([0, VACWIDTH]);
+    var y1 = d3.scaleLinear().range([VACHEIGHT, 0]);
+
+    function createVac(country, arr, svg) {
+      csv2.then((value) => {
+        // load csv values into a preprocessing array
+        for (var i = 0; i < value.length; i++) {
+          if (value[i].location === country) {
+            arr.push(value[i]);
+          }
+        }
+        // format the data
+        arr.forEach(function (d) {
+          d.date = new Date(d.date);
+          d.people_vaccinated = +d.people_vaccinated;
+          d.total_boosters = +d.total_boosters;
+        });
+
+        arr.sort(function (a, b) {
+          // turn strings into dates
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        // cale the range of the data
+        x1.domain(
+          d3.extent(arr, function (d) {
+            return d.date;
+          })
+        ).range([0, VACWIDTH]);
+        y1.domain([
+          0,
+          d3.max(arr, function (d) {
+            return d.people_vaccinated;
+          }),
+        ]).range([VACHEIGHT - VACMARGIN.bottom, VACMARGIN.top]);
+
+        // define the value line
+        var valueLine = d3
+          .line()
+          .x(function (d) {
+            return x1(d.date);
+          })
+          .y(function (d) {
+            return y1(d.people_vaccinated);
+          });
+
+        // add the case line path.
+        svg
+          .append("path")
+          .data([arr])
+          .attr("class", "line")
+          .attr("d", valueLine)
+          .attr("class", "linePink");
+
+        // add the x axis
+        svg
+          .append("g")
+          .attr("transform", `translate(0,${VACHEIGHT - VACMARGIN.bottom})`)
+          .call(d3.axisBottom(x1).tickFormat(d3.timeFormat("%b %y")).ticks())
+          .attr("id", "xAxis")
+          .attr("class", "axisWhite")
+          .call((g) => g.selectAll(".tick text"));
+
+        // add the y axis
+        svg
+          .append("g")
+          .call(d3.axisRight(y1).tickSize(VACWIDTH))
+          .attr("id", "yAxis")
+          .call((g) => g.select(".domain").remove())
+          .call((g) =>
+            g
+              .selectAll(".tick:not(:first-of-type) line")
+              .attr("stroke-opacity", 0.5)
+              .attr("stroke-dasharray", "2,2")
+          )
+          .call((g) =>
+            g.selectAll(".tick text").attr("x", 4).attr("color", "white")
+          );
+      });
+    }
+
+    // A function that updates the chart when dropdown option is selected
+    function updateVac(selectedGroup, arr, svg) {
+      csv2.then((value) => {
+        arr = [];
+
+        for (var i = 0; i < value.length; i++) {
+          if (value[i].location === selectedGroup) {
+            arr.push(value[i]);
+          }
+        }
+
+        if (arr.length == 0) {
+          arr.push({ date: new Date(), people_vaccinated: 0 });
+        }
+
+        // TODO: Refactor
+        // format the data
+        arr.forEach(function (d) {
+          d.date = new Date(d.date);
+          d.people_vaccinated = +d.people_vaccinated;
+        });
+
+        arr.sort(function (a, b) {
+          // turn strings into dates
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        // calc the range of the data
+        x1.domain(
+          d3.extent(arr, function (d) {
+            return d.date;
+          })
+        ).range([0, VACWIDTH]);
+        y1.domain([
+          0,
+          d3.max(arr, function (d) {
+            return d.people_vaccinated;
+          }),
+        ]).range([VACHEIGHT - VACMARGIN.bottom, VACMARGIN.top]);
+
+        svg
+          .selectAll("#xAxis")
+          .transition()
+          .duration(1000)
+          .ease(d3.easeCubicInOut)
+          .call(d3.axisBottom(x1).tickFormat(d3.timeFormat("%b %y")).ticks(12))
+          .attr("class", "axisWhite")
+          .call((g) => g.selectAll(".tick text"));
+
+        svg
+          .selectAll("#yAxis")
+          .transition()
+          .duration(1000)
+          .ease(d3.easeCubicInOut)
+          .call(d3.axisRight(y1).tickSize(VACWIDTH))
+          .call((g) => g.select(".domain").remove())
+          .call((g) =>
+            g
+              .selectAll(".tick:not(:first-of-type) line")
+              .attr("stroke-opacity", 0.5)
+              .attr("stroke-dasharray", "2,2")
+          )
+          .call((g) =>
+            g.selectAll(".tick text").attr("x", 4).attr("color", "white")
+          );
+
+        // Give these new data to update line
+        svg
+          .select("path")
+          .data([arr])
+          .transition()
+          .duration(1000)
+          .ease(d3.easeCubicInOut)
+          .attr(
+            "d",
+            d3
+              .line()
+              .x(function (d) {
+                return x1(d.date);
+              })
+              .y(function (d) {
+                return y1(d.people_vaccinated);
+              })
+          )
+          .attr("stroke", "blue");
+      });
+    }
+
+    createVac("Afghanistan", vacs, svg2);
   </script>
 </html>
