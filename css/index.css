@@ -41,3 +41,7 @@ axisWhite line {
 .selected {
     fill: greenyellow !important;
 }
+
+.swatch {
+    fill-opacity: .30;
+}
