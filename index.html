@@ -414,6 +414,14 @@ License: MIT Open Source License
       d3.select("select").property("value", country);
     }
 
+    // callback function when selecting country
+    function selectCircle(country) {
+      d3.select(".selected").classed("selected", false);
+      d3.select(`.${country.replace(/\s/g, "")}`).classed("selected", true);
+      updateLC(country, cases, svg, "cases");
+      d3.select("select").property("value", country);
+    }
+
     // declare map constants
     const mapWidth = 600;
     const mapHeight = 498;
@@ -445,8 +453,8 @@ License: MIT Open Source License
           .append("path")
           .attr("class", function (d) {
             return d.properties.name == "Afghanistan"
-              ? `selected ${d.properties.name}`
-              : d.properties.name;
+              ? `selected ${d.properties.name.replace(/\s/g, "")}`
+              : d.properties.name.replace(/\s/g, "");
           })
           .on("click", selectCountry)
           .attr("name", function (d) {
@@ -498,7 +506,7 @@ License: MIT Open Source License
       .enter()
       .append("circle")
       .attr("class", function (d) {
-        return d.country + "-circle";
+        return d.country.replace(/\s/g, "") + "-circle";
       })
       .attr("cx", function (d) {
         return projection([d.longitude, d.latitude])[0];
@@ -510,12 +518,8 @@ License: MIT Open Source License
         // find better way to scale
         return scaleCircle(d.cases);
       })
-      .on("mouseover", function (d, i) {
-        d3.select(this).transition().attr("fill", "#ff0000");
-        console.log(i);
-      })
-      .on("mouseout", function (d, i) {
-        d3.select(this).transition().duration(100);
+      .on("click", function(d, i) {
+        selectCircle(i.country)
       })
       .style("fill", function (d) {
         return scaleColor(d.cases)
