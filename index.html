@@ -13,6 +13,7 @@ License: MIT Open Source License
     <!-- import d3.js version 7 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://d3js.org/topojson.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
 
     <!-- import tailwind and other stylesheets -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +28,7 @@ License: MIT Open Source License
   <!-- document body -->
 
   <body>
-    <div class="wrapper h-screen bg-gray-900">
+    <div class="wrapper h-screen w-full bg-gray-900">
       <!-- navbar-->
       <nav class="bg-gray-800">
         <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
@@ -69,7 +70,7 @@ License: MIT Open Source License
           </div>
         </div>
       </nav>
-      <div class="row content p-3 w-4xl inline-flex">
+      <div class="row content p-3 ml-12 w-4xl inline-flex">
         <div class="cases-linechart bg-gray-800 mr-3">
           <row class="cases-lc-row inline-flex">
             <h2 class="text-white font-bold p-3">Cases by Country</h2>
@@ -82,6 +83,7 @@ License: MIT Open Source License
           </row>
         </div>
       --></div>
+      <div class="row content2 p-3 w-4xl inline-flex"></div>
     </div>
   </body>
 
@@ -96,6 +98,7 @@ License: MIT Open Source License
     // declare arrays for holding parsed data
     var cases = [];
     var deaths = [];
+    var income = [];
     var totalCases = [];
     var countries = [];
 
@@ -147,7 +150,7 @@ License: MIT Open Source License
   */
 
     // declare constant values
-    const WIDTH = 600;
+    const WIDTH = 500;
     const HEIGHT = 400;
     const MARGIN = {
       top: 20,
@@ -155,8 +158,6 @@ License: MIT Open Source License
       bottom: 30,
       left: 40,
     };
-    const INNER_WIDTH = WIDTH - MARGIN.left - MARGIN.right;
-    const INNER_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 
     // set the ranges
     var x = d3.scaleTime().range([0, WIDTH]);
@@ -397,6 +398,12 @@ License: MIT Open Source License
   /////////////////////////
   */
 
+    /*
+  /////////////////////////
+  WORLD MAP
+  /////////////////////////
+  */
+
     // callback function when selecting country
     function selectCountry() {
       d3.select(".selected").classed("selected", false);
@@ -408,7 +415,7 @@ License: MIT Open Source License
     }
 
     // declare map constants
-    const mapWidth = 800;
+    const mapWidth = 600;
     const mapHeight = 498;
 
     const map = d3
@@ -460,38 +467,65 @@ License: MIT Open Source License
       d3.json(
         "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/lat-long.json"
       ).then((data) => {
-        var circle = mapG
-          .selectAll(".mark")
-          .data(data)
-          .enter()
-          .append("circle")
-          .attr("class", function (d) {
-            return d.country + "-circle";
-          })
-          .attr("cx", function (d) {
-            return projection([d.longitude, d.latitude])[0];
-          })
-          .attr("cy", function (d) {
-            return projection([d.longitude, d.latitude])[1];
-          })
-          .attr("r", function (d) {
-            return parseFloat(d.cases) / 1000000;
-          })
-          .on("mouseover", function (d, i) {
-            d3.select(this).transition().attr("fill", "#ff0000");
-            console.log(i)
-          })
-          .on("mouseout", function (d, i) {
-            d3.select(this).transition().duration(100)
-          })
-          .style("fill", function (d) {
-            return d3
-              .schemeReds[6][Math.floor(Math.random() * (5 - 1 + 1) + 1)];
-          })
-          .attr("z-index", "9999 !important");
+        var scaleCircle = d3
+          .scaleSqrt()
+          .domain(
+            d3.extent(data, function (d) {
+              return d.cases;
+            })
+          )
+          .range([0, 1]);
+
+        var scaleColor = d3
+          .scaleQuantize().domain(
+            [0, 10000000]
+          ).range(["#ecca00", "#ec9b00", "#ec5300", "#ec2400", "#ec0000"]);
+
+
+    var legend = d3.legendColor()
+    .scale(scaleColor)
+    .labelFormat(d3.format(".0f"))
+    .title("Total Cases");
+
+    map.append("g")
+    .attr("transform", "translate(10,20)")
+    .call(legend);
+
+    setTimeout(function() {
+      var circle = mapG
+      .selectAll(".mark")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", function (d) {
+        return d.country + "-circle";
+      })
+      .attr("cx", function (d) {
+        return projection([d.longitude, d.latitude])[0];
+      })
+      .attr("cy", function (d) {
+        return projection([d.longitude, d.latitude])[1];
+      })
+      .attr("r", function (d) {
+        // find better way to scale
+        return scaleCircle(d.cases);
+      })
+      .on("mouseover", function (d, i) {
+        d3.select(this).transition().attr("fill", "#ff0000");
+        console.log(i);
+      })
+      .on("mouseout", function (d, i) {
+        d3.select(this).transition().duration(100);
+      })
+      .style("fill", function (d) {
+        return scaleColor(d.cases)
+      })
+      .style("fill-opacity", ".30")
+      .attr("z-index", "9999 !important");
+    }, 500);
+
       });
     }
-
     // handle zoom and panning
     var zoom = d3
       .zoom()
@@ -505,6 +539,140 @@ License: MIT Open Source License
 
     createMap();
 
-    console.log();
+    /*
+  /////////////////////////
+  END OF WORLD MAP
+  /////////////////////////
+  */
+
+    /*
+  /////////////////////////
+  CLUSTERING ANALYSIS
+  /////////////////////////
+  */
+
+    // declare map constants
+    var scatterMargin = { top: 40, right: 20, bottom: 30, left: 30 };
+    const scatterWidth = 680 - scatterMargin.left - scatterMargin.right;
+    const scatterHeight = 498 - scatterMargin.top - scatterMargin.bottom;
+
+    // parse the date / time
+    var parseTime = d3.timeParse("%b %y");
+
+    // set the ranges
+    var scatterX = d3.scaleTime().range([0, scatterWidth]);
+    var scatterY = d3.scaleLinear().range([scatterHeight, 0]);
+
+    // append the svg obgect to the body of the page
+    // appends a 'group' element to 'svg'
+    // moves the 'group' element to the top left margin
+    var scatter = d3
+      .select(".content")
+      .append("svg")
+      .attr("class", "bg-gray-800")
+      .classed("ml-3", true)
+      .attr("width", mapWidth)
+      .attr("height", mapHeight)
+      .append("g")
+      .attr(
+        "transform",
+        "translate(" + scatterMargin.left + "," + scatterMargin.top + ")"
+      );
+
+    function createScatter(arr, svg) {
+      csv.then((value) => {
+        // load csv values into a preprocessing array
+        for (var i = 0; i < value.length; i++) {
+          if (value[i].location === "Lower middle income") {
+            arr.push(value[i]);
+          }
+        }
+        // format the data
+        arr.forEach(function (d) {
+          d.date = new Date(d.date);
+          d.total_cases = +d.total_cases;
+        });
+
+        arr.sort(function (a, b) {
+          // turn strings into dates
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        // cale the range of the data
+        scatterX
+          .domain(
+            d3.extent(arr, function (d) {
+              return d.date;
+            })
+          )
+          .range([0, scatterWidth - 100]);
+        scatterY
+          .domain([
+            0,
+            d3.max(arr, function (d) {
+              return d.total_cases;
+            }),
+          ])
+          .range([scatterHeight - scatterMargin.bottom, scatterMargin.top]);
+
+        // define the value line
+        var valueLine = d3
+          .line()
+          .x(function (d) {
+            return scatterX(d.date);
+          })
+          .y(function (d) {
+            return scatterY(d.total_cases);
+          });
+
+        // Add the scatterplot
+        scatter
+          .selectAll("dot")
+          .data(arr)
+          .enter()
+          .append("circle")
+          .attr("r", 1)
+          .attr("cx", function (d) {
+            return scatterX(d.date);
+          })
+          .attr("cy", function (d) {
+            return scatterY(d.total_cases);
+          });
+
+        // add the x axis
+        scatter
+          .append("g")
+          .attr(
+            "transform",
+            `translate(0,${scatterHeight - scatterMargin.bottom})`
+          )
+          .call(
+            d3.axisBottom(scatterX).tickFormat(d3.timeFormat("%b %y")).ticks(12)
+          )
+          .attr("id", "scatterXAxis")
+          .attr("class", "axisWhite")
+          .call((g) => g.selectAll(".tick text"));
+
+        // add the y axis
+        scatter
+          .append("g")
+          .call(d3.axisRight(scatterY).tickSize(scatterWidth - 100))
+          .attr("id", "scatterYAxis")
+          .attr("class", "axisWhite")
+          .call((g) => g.select(".domain").remove())
+          .call((g) =>
+            g
+              .selectAll(".tick:not(:first-of-type) line")
+              .attr("stroke-opacity", 0.5)
+              .attr("stroke-dasharray", "2,2")
+          )
+          .call((g) =>
+            g.selectAll(".tick text").attr("x", 4).attr("color", "white")
+          );
+      });
+    }
+
+    createScatter(income);
+    console.log(income);
   </script>
 </html>
