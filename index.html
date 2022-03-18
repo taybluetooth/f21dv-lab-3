@@ -59,7 +59,7 @@ License: MIT Open Source License
                     >
 
                     <a
-                      href="#"
+                      href="https://github.com/taybluetooth/f21dv-lab-3"
                       class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                       >Github</a
                     >
@@ -83,11 +83,18 @@ License: MIT Open Source License
         </div>
         <div class="income-linechart bg-gray-800 mr-3">
           <row class="cases-lc-row inline-flex">
-            <h2 class="text-white font-bold p-3">Total Cases by Global Income Brackets</h2>
+            <h2 class="text-white font-bold p-3">
+              Total Cases by Global Income Brackets
+            </h2>
           </row>
         </div>
       </div>
       <div class="row content2 ml-12 pl-3 w-4xl inline-flex">
+        <div class="mini-linechart bg-gray-800 mr-3">
+          <row class="cases-lc-row inline-flex">
+            <h2 class="text-white font-bold p-3">New Cases Navigator</h2>
+          </row>
+        </div>
         <div class="vax-linechart bg-gray-800 mr-3">
           <row class="cases-lc-row inline-flex">
             <h2 class="text-white font-bold p-3">
@@ -145,6 +152,7 @@ License: MIT Open Source License
     // set the ranges
     var x = d3.scaleTime().range([0, WIDTH]);
     var y = d3.scaleLinear().range([HEIGHT, 0]);
+    var line, line2;
 
     // append the svg obgect to the body of the page
     // appends a 'group' element to 'svg'
@@ -166,11 +174,11 @@ License: MIT Open Source License
             arr.push(value[i]);
           }
         }
+
         // format the data
         arr.forEach(function (d) {
           d.date = new Date(d.date);
           d.new_cases = +d.new_cases;
-          d.people_vaccinated = +d.people_vaccinated;
         });
 
         arr.sort(function (a, b) {
@@ -187,7 +195,7 @@ License: MIT Open Source License
         y.domain([
           0,
           d3.max(arr, function (d) {
-            return data === "cases" ? d.new_cases : d.people_vaccinated;
+            return d.new_cases;
           }),
         ]).range([HEIGHT - MARGIN.bottom, MARGIN.top]);
 
@@ -198,16 +206,18 @@ License: MIT Open Source License
             return x(d.date);
           })
           .y(function (d) {
-            return y(data === "cases" ? d.new_cases : d.people_vaccinated);
+            return y(d.new_cases);
           });
 
         // add the case line path.
-        svg
+        line = svg
+          .append("g")
+          .attr("clip-path", "url(#clip)")
           .append("path")
           .data([arr])
           .attr("class", "line")
           .attr("d", valueLine)
-          .attr("class", data == "cases" ? "lineBlue" : "linePink");
+          .attr("class", "lineBlue");
 
         // add the x axis
         svg
@@ -233,6 +243,28 @@ License: MIT Open Source License
           .call((g) =>
             g.selectAll(".tick text").attr("x", 4).attr("color", "white")
           );
+
+        d3.select(".cases-linechart").append("button").text("reset").classed("ml-3 bg-gray-900 text-white p-2", true).on("click", function(d) {
+          x.domain(
+            d3.extent(arr, function (d) {
+              return d.date;
+            })
+          );
+          d3.select("#xAxis").transition().duration(1000).call(d3.axisBottom(x));
+          line.transition()
+          .duration(1000).attr(
+            "d",
+            d3
+              .line()
+              .x(function (d) {
+                return x(d.date);
+              })
+              .y(function (d) {
+                return y(d.new_cases);
+              })
+          );
+        });
+          
       });
     }
 
@@ -245,6 +277,10 @@ License: MIT Open Source License
           if (value[i].location === selectedGroup) {
             arr.push(value[i]);
           }
+        }
+
+        if (arr.length == 0) {
+          arr.push({ date: new Date(), new_cases: 0, new_deaths: 0 });
         }
 
         // TODO: Refactor
@@ -269,7 +305,7 @@ License: MIT Open Source License
         y.domain([
           0,
           d3.max(arr, function (d) {
-            return data === "cases" ? d.new_cases : d.new_deaths;
+            return d.new_cases;
           }),
         ]).range([HEIGHT - MARGIN.bottom, MARGIN.top]);
 
@@ -314,7 +350,7 @@ License: MIT Open Source License
                 return x(d.date);
               })
               .y(function (d) {
-                return y(data === "cases" ? d.new_cases : d.new_deaths);
+                return y(d.new_cases);
               })
           )
           .attr("stroke", "blue");
@@ -324,8 +360,9 @@ License: MIT Open Source License
     // method which updates the countries line chart
     function countryChange() {
       var country = d3.select(this).property("value");
-      updateLC(country, cases, svg, "cases");
+      updateLC(country, cases, svg);
       updateVac(country, vacs, svg2);
+      updateMini(country);
       d3.selectAll(`path`).classed("selected", false);
       d3.select(`[name=${country.replace(/\s/g, "")}]`).classed(
         "selected",
@@ -370,7 +407,246 @@ License: MIT Open Source License
     createDropdown(".cases-lc-row", countryChange, csv);
     // createDropdown(".deaths-lc-row", deathsChange);
     // initialise line chart
-    initialiseLC("Afghanistan", cases, svg, "cases");
+    initialiseLC("Afghanistan", cases, svg);
+
+    const MINIWIDTH = 500;
+    const MINIHEIGHT = 200;
+
+    var mini = d3
+      .select(".mini-linechart")
+      .append("svg")
+      .attr("width", MINIWIDTH + MARGIN.left + MARGIN.right)
+      .attr("height", MINIHEIGHT + MARGIN.top + MARGIN.bottom)
+      .append("g")
+      .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
+
+    var miniX = d3.scaleTime().range([0, MINIWIDTH]);
+    var miniY = d3.scaleLinear().range([MINIHEIGHT, 0]);
+
+    function createMiniChart(country) {
+      csv.then((value) => {
+        // load csv values into a preprocessing array
+        for (var i = 0; i < value.length; i++) {
+          if (value[i].location === country) {
+            cases.push(value[i]);
+          }
+        }
+
+        var brush = d3
+          .brushX()
+          .extent([
+            [0, MARGIN.top],
+            [MINIWIDTH, MINIHEIGHT - MARGIN.bottom],
+          ])
+          .on("end", brushed);
+
+        // format the data
+        cases.forEach(function (d) {
+          d.date = new Date(d.date);
+          d.new_cases = +d.new_cases;
+        });
+
+        cases.sort(function (a, b) {
+          // turn strings into dates
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        // cale the range of the data
+        miniX
+          .domain(
+            d3.extent(cases, function (d) {
+              return d.date;
+            })
+          )
+          .range([0, MINIWIDTH]);
+        miniY
+          .domain([
+            0,
+            d3.max(cases, function (d) {
+              return d.new_cases;
+            }),
+          ])
+          .range([MINIHEIGHT - MARGIN.bottom, MARGIN.top]);
+
+        // define the value line
+        var valueLine = d3
+          .line()
+          .x(function (d) {
+            return miniX(d.date);
+          })
+          .y(function (d) {
+            return miniY(d.new_cases);
+          });
+
+        // add the case line path.
+        line2 = mini
+          .append("g")
+          .attr("clip-path", "url(#clip)")
+          .append("path")
+          .data([cases])
+          .attr("class", "line")
+          .attr("d", valueLine)
+          .attr("class", "lineBlue");
+
+        line2.append("g").attr("class", "brush").call(brush);
+
+        mini.append("g").attr("class", "brush").call(brush);
+
+        function brushed(event) {
+          const selection = event.selection;
+          // If no selection, back to initial coordinate. Otherwise, update X axis domain
+          if (!selection) {
+            d3.extent(cases, function (d) {
+              return d.date;
+            });
+          } else {
+            x.domain([x.invert(selection[0]), x.invert(selection[1])]);
+            mini.select(".brush").call(brush.move, null); // This remove the grey brush area as soon as the selection has been done
+          }
+
+          // Update axis and line position
+          svg
+            .selectAll("#xAxis")
+            .transition()
+            .duration(1000)
+            .call(d3.axisBottom(x));
+
+          line
+            .transition()
+            .duration(1000)
+            .attr(
+              "d",
+              d3
+                .line()
+                .x(function (d) {
+                  return x(d.date);
+                })
+                .y(function (d) {
+                  return y(d.new_cases);
+                })
+            );
+        }
+
+        // add the x axis
+        mini
+          .append("g")
+          .attr("transform", `translate(0,${MINIHEIGHT - MARGIN.bottom})`)
+          .call(
+            d3.axisBottom(miniX).tickFormat(d3.timeFormat("%b %y")).ticks(12)
+          )
+          .attr("id", "miniXAxis")
+          .attr("class", "axisWhite")
+          .call((g) => g.selectAll(".tick text"));
+
+        // add the y axis
+        mini
+          .append("g")
+          .call(d3.axisRight(miniY).tickSize(MINIWIDTH))
+          .attr("id", "miniYAxis")
+          .call((g) => g.select(".domain").remove())
+          .call((g) =>
+            g
+              .selectAll(".tick:not(:first-of-type) line")
+              .attr("stroke-opacity", 0.5)
+              .attr("stroke-dasharray", "2,2")
+          )
+          .call((g) =>
+            g.selectAll(".tick text").attr("x", 4).attr("color", "white")
+          );
+      });
+    }
+
+    function updateMini(selectedGroup) {
+      csv.then((value) => {
+        cases = [];
+
+        for (var i = 0; i < value.length; i++) {
+          if (value[i].location === selectedGroup) {
+            cases.push(value[i]);
+          }
+        }
+
+        if (cases.length == 0) {
+          cases.push({ date: new Date(), new_cases: 0, new_deaths: 0 });
+        }
+
+        // TODO: Refactor
+        // format the data
+        cases.forEach(function (d) {
+          d.date = new Date(d.date);
+          d.new_cases = +d.new_cases;
+        });
+
+        cases.sort(function (a, b) {
+          // turn strings into dates
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        // calc the range of the data
+        miniX
+          .domain(
+            d3.extent(cases, function (d) {
+              return d.date;
+            })
+          )
+          .range([0, MINIWIDTH]);
+        miniY
+          .domain([
+            0,
+            d3.max(cases, function (d) {
+              return d.new_cases;
+            }),
+          ])
+          .range([MINIHEIGHT - MARGIN.bottom, MARGIN.top]);
+
+        mini
+          .selectAll("#miniXAxis")
+          .transition()
+          .duration(1000)
+          .ease(d3.easeCubicInOut)
+          .call(d3.axisBottom(miniX).tickFormat(d3.timeFormat("%b %y")).ticks())
+          .attr("class", "axisWhite")
+          .call((g) => g.selectAll(".tick text"));
+
+        mini
+          .selectAll("#miniYAxis")
+          .transition()
+          .duration(1000)
+          .ease(d3.easeCubicInOut)
+          .call(d3.axisRight(miniY).tickSize(MINIWIDTH))
+          .call((g) => g.select(".domain").remove())
+          .call((g) =>
+            g
+              .selectAll(".tick:not(:first-of-type) line")
+              .attr("stroke-opacity", 0.5)
+              .attr("stroke-dasharray", "2,2")
+          )
+          .call((g) =>
+            g.selectAll(".tick text").attr("x", 4).attr("color", "white")
+          );
+
+        // Give these new data to update line
+        line2
+          .data([cases])
+          .transition()
+          .duration(1000)
+          .ease(d3.easeCubicInOut)
+          .attr(
+            "d",
+            d3
+              .line()
+              .x(function (d) {
+                return miniX(d.date);
+              })
+              .y(function (d) {
+                return miniY(d.new_cases);
+              })
+          )
+          .attr("stroke", "blue");
+      });
+    }
+
+    createMiniChart("Afghanistan");
 
     /*
   /////////////////////////
@@ -393,6 +669,7 @@ License: MIT Open Source License
       );
       updateLC(country, cases, svg, "cases", csv);
       updateVac(country, vacs, svg2);
+      updateMini(country);
       d3.select("select").property("value", country);
     }
 
@@ -468,7 +745,7 @@ License: MIT Open Source License
         var legend = d3
           .legendColor()
           .scale(scaleColor)
-          .labelFormat(d3.format(".0f"))
+          .labelFormat(d3.format(".0f"));
 
         map.append("g").attr("transform", "translate(10,20)").call(legend);
 
@@ -555,7 +832,7 @@ License: MIT Open Source License
         "translate(" + scatterMargin.left + "," + scatterMargin.top + ")"
       );
 
-    function createScatter(arr, svg) {
+    function createScatter(arr) {
       csv.then((value) => {
         // load csv values into a preprocessing array
         for (var i = 0; i < value.length; i++) {
@@ -589,7 +866,7 @@ License: MIT Open Source License
           .shapeWidth(100)
           .labelFormat(d3.format(".0f"))
           .orient("horizontal")
-          .scale(scaleColor)
+          .scale(scaleColor);
 
         scatter.append("g").attr("transform", "translate(0, -20)").call(legend);
 
@@ -648,7 +925,10 @@ License: MIT Open Source License
             }
           })
           .on("mouseover", function (d, i) {
-            console.log(i.location);
+            updateLC(i.location, cases, svg, "cases", csv);
+            updateVac(i.location, vacs, svg2);
+            updateMini(i.location);
+            d3.select("select").property("value", i.location);
           });
 
         // add the x axis
@@ -737,8 +1017,8 @@ License: MIT Open Source License
   */
 
     // declare constant values
-    const VACWIDTH = 500;
-    const VACHEIGHT = 220;
+    const VACWIDTH = 530;
+    const VACHEIGHT = 200;
     const VACMARGIN = {
       top: 10,
       right: 30,
@@ -761,15 +1041,21 @@ License: MIT Open Source License
     // set the ranges
     var x1 = d3.scaleTime().range([0, VACWIDTH]);
     var y1 = d3.scaleLinear().range([VACHEIGHT, 0]);
+    var y2 = d3.scaleLinear().range([VACHEIGHT, 0]);
 
     function createVac(country, arr, svg) {
       csv2.then((value) => {
         // load csv values into a preprocessing array
         for (var i = 0; i < value.length; i++) {
           if (value[i].location === country) {
-            arr.push(value[i]);
+            if (value[i].people_vaccinated != 0) {
+              arr.push(value[i]);
+            }
           }
         }
+
+        console.log(arr);
+
         // format the data
         arr.forEach(function (d) {
           d.date = new Date(d.date);
@@ -794,6 +1080,12 @@ License: MIT Open Source License
             return d.people_vaccinated;
           }),
         ]).range([VACHEIGHT - VACMARGIN.bottom, VACMARGIN.top]);
+        y2.domain([
+          0,
+          d3.max(arr, function (d) {
+            return d.total_boosters;
+          }),
+        ]).range([VACHEIGHT - VACMARGIN.bottom, VACMARGIN.top]);
 
         // define the value line
         var valueLine = d3
@@ -805,20 +1097,22 @@ License: MIT Open Source License
             return y1(d.people_vaccinated);
           });
 
-        // add the case line path.
         svg
+          .append("g")
+          .attr("clip-path", "url(#clip)")
           .append("path")
           .data([arr])
           .attr("class", "line")
           .attr("d", valueLine)
           .attr("class", "linePink");
+        // add the case line path.
 
         // add the x axis
         svg
           .append("g")
           .attr("transform", `translate(0,${VACHEIGHT - VACMARGIN.bottom})`)
           .call(d3.axisBottom(x1).tickFormat(d3.timeFormat("%b %y")).ticks())
-          .attr("id", "xAxis")
+          .attr("id", "xAxis2")
           .attr("class", "axisWhite")
           .call((g) => g.selectAll(".tick text"));
 
@@ -826,7 +1120,7 @@ License: MIT Open Source License
         svg
           .append("g")
           .call(d3.axisRight(y1).tickSize(VACWIDTH))
-          .attr("id", "yAxis")
+          .attr("id", "yAxis2")
           .call((g) => g.select(".domain").remove())
           .call((g) =>
             g
@@ -847,12 +1141,19 @@ License: MIT Open Source License
 
         for (var i = 0; i < value.length; i++) {
           if (value[i].location === selectedGroup) {
-            arr.push(value[i]);
+            if (value[i].people_vaccinated != 0) {
+              arr.push(value[i]);
+            }
+            console.log(value[i]);
           }
         }
 
         if (arr.length == 0) {
-          arr.push({ date: new Date(), people_vaccinated: 0 });
+          arr.push({
+            date: new Date(),
+            people_vaccinated: 0,
+            total_boosters: 0,
+          });
         }
 
         // TODO: Refactor
@@ -860,6 +1161,7 @@ License: MIT Open Source License
         arr.forEach(function (d) {
           d.date = new Date(d.date);
           d.people_vaccinated = +d.people_vaccinated;
+          d.total_boosters = +d.total_boosters;
         });
 
         arr.sort(function (a, b) {
@@ -879,21 +1181,25 @@ License: MIT Open Source License
             return d.people_vaccinated;
           }),
         ]).range([VACHEIGHT - VACMARGIN.bottom, VACMARGIN.top]);
+        y2.domain([
+          0,
+          d3.max(arr, function (d) {
+            return d.total_boosters;
+          }),
+        ]).range([VACHEIGHT - VACMARGIN.bottom, VACMARGIN.top]);
 
         svg
-          .selectAll("#xAxis")
+          .selectAll("#xAxis2")
           .transition()
           .duration(1000)
-          .ease(d3.easeCubicInOut)
           .call(d3.axisBottom(x1).tickFormat(d3.timeFormat("%b %y")).ticks(12))
           .attr("class", "axisWhite")
           .call((g) => g.selectAll(".tick text"));
 
         svg
-          .selectAll("#yAxis")
+          .selectAll("#yAxis2")
           .transition()
           .duration(1000)
-          .ease(d3.easeCubicInOut)
           .call(d3.axisRight(y1).tickSize(VACWIDTH))
           .call((g) => g.select(".domain").remove())
           .call((g) =>
@@ -908,11 +1214,10 @@ License: MIT Open Source License
 
         // Give these new data to update line
         svg
-          .select("path")
+          .select(".linePink")
           .data([arr])
           .transition()
           .duration(1000)
-          .ease(d3.easeCubicInOut)
           .attr(
             "d",
             d3
@@ -923,8 +1228,7 @@ License: MIT Open Source License
               .y(function (d) {
                 return y1(d.people_vaccinated);
               })
-          )
-          .attr("stroke", "blue");
+          );
       });
     }
 
