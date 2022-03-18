@@ -70,6 +70,7 @@ License: MIT Open Source License
           </div>
         </div>
       </nav>
+      <!-- set content for dashboard -->
       <div class="row content p-3 ml-12 w-4xl inline-flex">
         <div class="cases-linechart bg-gray-800 mr-3">
           <row class="cases-lc-row inline-flex">
@@ -166,6 +167,7 @@ License: MIT Open Source License
       .append("g")
       .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
 
+    // function which initialises the cases linechart
     function initialiseLC(country, arr, svg, data) {
       csv.then((value) => {
         // load csv values into a preprocessing array
@@ -181,12 +183,13 @@ License: MIT Open Source License
           d.new_cases = +d.new_cases;
         });
 
+        // sort by date
         arr.sort(function (a, b) {
           // turn strings into dates
           return new Date(b.date) - new Date(a.date);
         });
 
-        // cale the range of the data
+        // calc the range of the data
         x.domain(
           d3.extent(arr, function (d) {
             return d.date;
@@ -244,46 +247,57 @@ License: MIT Open Source License
             g.selectAll(".tick text").attr("x", 4).attr("color", "white")
           );
 
-        d3.select(".cases-linechart").append("button").text("reset").classed("ml-3 bg-gray-900 text-white p-2", true).on("click", function(d) {
-          x.domain(
-            d3.extent(arr, function (d) {
-              return d.date;
-            })
-          );
-          d3.select("#xAxis").transition().duration(1000).call(d3.axisBottom(x));
-          line.transition()
-          .duration(1000).attr(
-            "d",
-            d3
-              .line()
-              .x(function (d) {
-                return x(d.date);
+        // add a button which resets the brushing effect
+        d3.select(".cases-linechart")
+          .append("button")
+          .text("reset")
+          .classed("ml-3 bg-gray-900 text-white p-2", true)
+          .on("click", function (d) {
+            x.domain(
+              d3.extent(arr, function (d) {
+                return d.date;
               })
-              .y(function (d) {
-                return y(d.new_cases);
-              })
-          );
-        });
-          
+            );
+            d3.select("#xAxis")
+              .transition()
+              .duration(1000)
+              .call(d3.axisBottom(x));
+            line
+              .transition()
+              .duration(1000)
+              .attr(
+                "d",
+                d3
+                  .line()
+                  .x(function (d) {
+                    return x(d.date);
+                  })
+                  .y(function (d) {
+                    return y(d.new_cases);
+                  })
+              );
+          });
       });
     }
 
-    // A function that updates the chart when dropdown option is selected
+    // A function that updates the cases chart when a dropdown option is selected
     function updateLC(selectedGroup, arr, svg, data) {
+      // reset the array
       csv.then((value) => {
         arr = [];
 
+        // push each object containing data about the country into the array
         for (var i = 0; i < value.length; i++) {
           if (value[i].location === selectedGroup) {
             arr.push(value[i]);
           }
         }
 
+        // if no country found push a singular object so the graph doesn't look janky
         if (arr.length == 0) {
           arr.push({ date: new Date(), new_cases: 0, new_deaths: 0 });
         }
 
-        // TODO: Refactor
         // format the data
         arr.forEach(function (d) {
           d.date = new Date(d.date);
@@ -291,6 +305,7 @@ License: MIT Open Source License
           d.new_deaths = +d.new_deaths;
         });
 
+        // sort by date
         arr.sort(function (a, b) {
           // turn strings into dates
           return new Date(b.date) - new Date(a.date);
@@ -309,6 +324,7 @@ License: MIT Open Source License
           }),
         ]).range([HEIGHT - MARGIN.bottom, MARGIN.top]);
 
+        // update x axis
         svg
           .selectAll("#xAxis")
           .transition()
@@ -318,6 +334,7 @@ License: MIT Open Source License
           .attr("class", "axisWhite")
           .call((g) => g.selectAll(".tick text"));
 
+        // update y axis
         svg
           .selectAll("#yAxis")
           .transition()
@@ -335,7 +352,7 @@ License: MIT Open Source License
             g.selectAll(".tick text").attr("x", 4).attr("color", "white")
           );
 
-        // Give these new data to update line
+        // give the new data to update line's path
         svg
           .select("path")
           .data([arr])
@@ -357,7 +374,7 @@ License: MIT Open Source License
       });
     }
 
-    // method which updates the countries line chart
+    // callback method which updates the countries line chart upon selecting dropdown option
     function countryChange() {
       var country = d3.select(this).property("value");
       updateLC(country, cases, svg);
@@ -405,13 +422,20 @@ License: MIT Open Source License
 
     // create dropdown menu
     createDropdown(".cases-lc-row", countryChange, csv);
-    // createDropdown(".deaths-lc-row", deathsChange);
     // initialise line chart
     initialiseLC("Afghanistan", cases, svg);
 
+    /*
+  /////////////////////////
+  MINI NAVIGATOR CHART
+  /////////////////////////
+  */
+
+    // declare constants
     const MINIWIDTH = 500;
     const MINIHEIGHT = 200;
 
+    // add mini linechart svg
     var mini = d3
       .select(".mini-linechart")
       .append("svg")
@@ -420,18 +444,21 @@ License: MIT Open Source License
       .append("g")
       .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
 
+    // initialise axes
     var miniX = d3.scaleTime().range([0, MINIWIDTH]);
     var miniY = d3.scaleLinear().range([MINIHEIGHT, 0]);
 
+    // function which creates the navigator chart for a country
     function createMiniChart(country) {
       csv.then((value) => {
-        // load csv values into a preprocessing array
+        // push cases into global cases array
         for (var i = 0; i < value.length; i++) {
           if (value[i].location === country) {
             cases.push(value[i]);
           }
         }
 
+        // initalise brush to be used in whole svg with brushed as the callback
         var brush = d3
           .brushX()
           .extent([
@@ -446,12 +473,13 @@ License: MIT Open Source License
           d.new_cases = +d.new_cases;
         });
 
+        // sort by date
         cases.sort(function (a, b) {
           // turn strings into dates
           return new Date(b.date) - new Date(a.date);
         });
 
-        // cale the range of the data
+        // calc the range of the data
         miniX
           .domain(
             d3.extent(cases, function (d) {
@@ -488,13 +516,14 @@ License: MIT Open Source License
           .attr("d", valueLine)
           .attr("class", "lineBlue");
 
+        // bind brush to the line and chart itself
         line2.append("g").attr("class", "brush").call(brush);
-
         mini.append("g").attr("class", "brush").call(brush);
 
+        // callback function that fires when a brush selection is made
         function brushed(event) {
           const selection = event.selection;
-          // If no selection, back to initial coordinate. Otherwise, update X axis domain
+          // if no selection, back to initial coordinate, otherwise, update x axis
           if (!selection) {
             d3.extent(cases, function (d) {
               return d.date;
@@ -504,13 +533,14 @@ License: MIT Open Source License
             mini.select(".brush").call(brush.move, null); // This remove the grey brush area as soon as the selection has been done
           }
 
-          // Update axis and line position
+          // update x axis
           svg
             .selectAll("#xAxis")
             .transition()
             .duration(1000)
             .call(d3.axisBottom(x));
 
+          // update y axis
           line
             .transition()
             .duration(1000)
@@ -556,27 +586,31 @@ License: MIT Open Source License
       });
     }
 
+    // function which updates the navigator chart upon selecting a new country
     function updateMini(selectedGroup) {
+      // reset cases
       csv.then((value) => {
         cases = [];
 
+        // add cases by country
         for (var i = 0; i < value.length; i++) {
           if (value[i].location === selectedGroup) {
             cases.push(value[i]);
           }
         }
 
+        // push empty object if no country found
         if (cases.length == 0) {
           cases.push({ date: new Date(), new_cases: 0, new_deaths: 0 });
         }
 
-        // TODO: Refactor
         // format the data
         cases.forEach(function (d) {
           d.date = new Date(d.date);
           d.new_cases = +d.new_cases;
         });
 
+        // sort by date
         cases.sort(function (a, b) {
           // turn strings into dates
           return new Date(b.date) - new Date(a.date);
@@ -599,6 +633,7 @@ License: MIT Open Source License
           ])
           .range([MINIHEIGHT - MARGIN.bottom, MARGIN.top]);
 
+        // update x axis
         mini
           .selectAll("#miniXAxis")
           .transition()
@@ -608,6 +643,7 @@ License: MIT Open Source License
           .attr("class", "axisWhite")
           .call((g) => g.selectAll(".tick text"));
 
+        // update y axis
         mini
           .selectAll("#miniYAxis")
           .transition()
@@ -625,7 +661,7 @@ License: MIT Open Source License
             g.selectAll(".tick text").attr("x", 4).attr("color", "white")
           );
 
-        // Give these new data to update line
+        // give the new data to update line
         line2
           .data([cases])
           .transition()
@@ -646,13 +682,8 @@ License: MIT Open Source License
       });
     }
 
+    // create navigator chart
     createMiniChart("Afghanistan");
-
-    /*
-  /////////////////////////
-  END OF LINE CHART
-  /////////////////////////
-  */
 
     /*
   /////////////////////////
@@ -677,6 +708,7 @@ License: MIT Open Source License
     const mapWidth = 600;
     const mapHeight = 498;
 
+    // create map svg
     const map = d3
       .select(".world-map")
       .append("svg")
@@ -684,19 +716,24 @@ License: MIT Open Source License
       .attr("width", mapWidth)
       .attr("height", mapHeight); //track where user clicked down
 
+    // create map projection to be mercator scale
     const projection = d3
       .geoMercator()
       .scale(100)
       .translate([mapWidth / 2, mapHeight / 1.4]);
     const path = d3.geoPath(projection);
 
+    // create map grouping
     const mapG = map.append("g");
 
+    // function which creates a world map using data from the geojson countries csv
     function createMap() {
       d3.json(
         "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/countries.json"
       ).then((data) => {
+        // get topojson features from geojson objects
         const countries = topojson.feature(data, data.objects.countries);
+        // draw country
         mapG
           .selectAll("path")
           .data(countries.features)
@@ -725,9 +762,11 @@ License: MIT Open Source License
           .attr("d", path);
       });
 
+      // draw circle which represents cases using lat long data
       d3.json(
         "https://raw.githubusercontent.com/taybluetooth/f21dv-lab-3/main/data/lat-long.json"
       ).then((data) => {
+        // scale circle size by cases
         var scaleCircle = d3
           .scaleSqrt()
           .domain(
@@ -737,18 +776,22 @@ License: MIT Open Source License
           )
           .range([0, 0.5]);
 
+        // divide cases into quantized colour scale
         var scaleColor = d3
           .scaleQuantize()
           .domain([0, 10000000])
           .range(["#ecca00", "#ec9b00", "#ec5300", "#ec2400", "#ec0000"]);
 
+        // create a legend for readability
         var legend = d3
           .legendColor()
           .scale(scaleColor)
           .labelFormat(d3.format(".0f"));
 
+        // add legend to map
         map.append("g").attr("transform", "translate(10,20)").call(legend);
 
+        // add circles after time to avoid overlapping
         setTimeout(function () {
           var circle = mapG
             .selectAll(".mark")
@@ -788,15 +831,11 @@ License: MIT Open Source License
         mapG.selectAll("circle").attr("transform", event.transform);
       });
 
+    // bind zoom to map
     map.call(zoom);
 
+    // create map
     createMap();
-
-    /*
-  /////////////////////////
-  END OF WORLD MAP
-  /////////////////////////
-  */
 
     /*
   /////////////////////////
@@ -832,9 +871,10 @@ License: MIT Open Source License
         "translate(" + scatterMargin.left + "," + scatterMargin.top + ")"
       );
 
+    // function which creates scatter plot
     function createScatter(arr) {
       csv.then((value) => {
-        // load csv values into a preprocessing array
+        // add values to array
         for (var i = 0; i < value.length; i++) {
           if (
             value[i].location === "Lower middle income" ||
@@ -851,16 +891,19 @@ License: MIT Open Source License
           d.new_cases = +d.new_cases;
         });
 
+        // sort by date
         arr.sort(function (a, b) {
           // turn strings into dates
           return new Date(b.date) - new Date(a.date);
         });
 
+        // create ordinal colour scale for legend
         var scaleColor = d3
           .scaleOrdinal()
           .domain(["L Income", "LM Income", "UM Income", "H Income"])
           .range(["red", "orange", "yellow", "green"]);
 
+        // create legend
         var legend = d3
           .legendColor()
           .shapeWidth(100)
@@ -868,9 +911,10 @@ License: MIT Open Source License
           .orient("horizontal")
           .scale(scaleColor);
 
+        // add legend to chart
         scatter.append("g").attr("transform", "translate(0, -20)").call(legend);
 
-        // cale the range of the data
+        // calc the range of the data
         scatterX
           .domain(
             d3.extent(arr, function (d) {
@@ -964,51 +1008,8 @@ License: MIT Open Source License
       });
     }
 
+    // create scatter plot
     createScatter(income);
-
-    function createIncomePieChart() {
-      var pieData = [2, 4, 8, 10];
-      var pieWidth = 400;
-      var pieHeight = 300;
-
-      var pie = d3
-        .select(".content2")
-        .append("svg")
-        .classed("bg-gray-800", true)
-        .attr("width", pieWidth)
-        .attr("height", pieHeight);
-      (radius = Math.min(pieWidth, pieHeight) / 2),
-        (g = pie
-          .append("g")
-          .attr(
-            "transform",
-            "translate(" + pieWidth / 2 + "," + pieHeight / 2 + ")"
-          ));
-
-      var color = d3.scaleOrdinal(["red", "orange", "yellow", "green"]);
-
-      // Generate the pie
-      var pieG = d3.pie();
-
-      // Generate the arcs
-      var arc = d3.arc().innerRadius(40).outerRadius(radius);
-
-      //Generate groups
-      var arcs = g
-        .selectAll("arc")
-        .data(pieG(pieData))
-        .enter()
-        .append("g")
-        .attr("class", "arc");
-
-      //Draw arc paths
-      arcs
-        .append("path")
-        .attr("fill", function (d, i) {
-          return color(i);
-        })
-        .attr("d", arc);
-    }
 
     /*
   /////////////////////////
@@ -1026,6 +1027,7 @@ License: MIT Open Source License
       left: 40,
     };
 
+    // create vaccination chart
     var svg2 = d3
       .select(".vax-linechart")
       .append("svg")
@@ -1043,9 +1045,10 @@ License: MIT Open Source License
     var y1 = d3.scaleLinear().range([VACHEIGHT, 0]);
     var y2 = d3.scaleLinear().range([VACHEIGHT, 0]);
 
+    // function which creates vax chart
     function createVac(country, arr, svg) {
       csv2.then((value) => {
-        // load csv values into a preprocessing array
+        // add values to array
         for (var i = 0; i < value.length; i++) {
           if (value[i].location === country) {
             if (value[i].people_vaccinated != 0) {
@@ -1054,8 +1057,6 @@ License: MIT Open Source License
           }
         }
 
-        console.log(arr);
-
         // format the data
         arr.forEach(function (d) {
           d.date = new Date(d.date);
@@ -1063,12 +1064,13 @@ License: MIT Open Source License
           d.total_boosters = +d.total_boosters;
         });
 
+        // sort by date
         arr.sort(function (a, b) {
           // turn strings into dates
           return new Date(b.date) - new Date(a.date);
         });
 
-        // cale the range of the data
+        // calc the range of the data
         x1.domain(
           d3.extent(arr, function (d) {
             return d.date;
@@ -1097,6 +1099,7 @@ License: MIT Open Source License
             return y1(d.people_vaccinated);
           });
 
+        // add line to chart
         svg
           .append("g")
           .attr("clip-path", "url(#clip)")
@@ -1136,9 +1139,11 @@ License: MIT Open Source License
 
     // A function that updates the chart when dropdown option is selected
     function updateVac(selectedGroup, arr, svg) {
+      // reset array
       csv2.then((value) => {
         arr = [];
 
+        // add values by country
         for (var i = 0; i < value.length; i++) {
           if (value[i].location === selectedGroup) {
             if (value[i].people_vaccinated != 0) {
@@ -1148,6 +1153,7 @@ License: MIT Open Source License
           }
         }
 
+        // push empty object if no country found
         if (arr.length == 0) {
           arr.push({
             date: new Date(),
@@ -1156,7 +1162,6 @@ License: MIT Open Source License
           });
         }
 
-        // TODO: Refactor
         // format the data
         arr.forEach(function (d) {
           d.date = new Date(d.date);
@@ -1164,6 +1169,7 @@ License: MIT Open Source License
           d.total_boosters = +d.total_boosters;
         });
 
+        // sort by date
         arr.sort(function (a, b) {
           // turn strings into dates
           return new Date(b.date) - new Date(a.date);
@@ -1188,6 +1194,7 @@ License: MIT Open Source License
           }),
         ]).range([VACHEIGHT - VACMARGIN.bottom, VACMARGIN.top]);
 
+        // update x axis
         svg
           .selectAll("#xAxis2")
           .transition()
@@ -1196,6 +1203,7 @@ License: MIT Open Source License
           .attr("class", "axisWhite")
           .call((g) => g.selectAll(".tick text"));
 
+        // update y axis
         svg
           .selectAll("#yAxis2")
           .transition()
@@ -1212,7 +1220,7 @@ License: MIT Open Source License
             g.selectAll(".tick text").attr("x", 4).attr("color", "white")
           );
 
-        // Give these new data to update line
+        // give the new data to update line
         svg
           .select(".linePink")
           .data([arr])
@@ -1232,6 +1240,7 @@ License: MIT Open Source License
       });
     }
 
+    // create vax chart
     createVac("Afghanistan", vacs, svg2);
   </script>
 </html>
